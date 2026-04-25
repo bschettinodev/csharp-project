@@ -1,26 +1,25 @@
-using api.Data;
-using api.Models;
+using api.Dtos.Categories;
+using api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CategoriesController(AppDbContext context) : ControllerBase
+public class CategoriesController(CategoriesService categoriesService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Category>>> GetAll()
+    public async Task<ActionResult<IEnumerable<CategoryResponseDto>>> GetAll()
     {
-        var categories = await context.Categories.ToListAsync();
+        var categories = await categoriesService.GetAllAsync();
 
         return Ok(categories);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Category>> GetById(Guid id)
+    public async Task<ActionResult<CategoryResponseDto>> GetById(Guid id)
     {
-        var category = await context.Categories.FindAsync(id);
+        var category = await categoriesService.GetByIdAsync(id);
 
         if (category is null)
         {
@@ -31,33 +30,22 @@ public class CategoriesController(AppDbContext context) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Category>> Create(Category category)
+    public async Task<ActionResult<CategoryResponseDto>> Create(CreateCategoryDto dto)
     {
-        category.Id = Guid.NewGuid();
-        category.CreatedAt = DateTime.UtcNow;
-
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
+        var category = await categoriesService.CreateAsync(dto);
 
         return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, Category updatedCategory)
+    public async Task<IActionResult> Update(Guid id, UpdateCategoryDto dto)
     {
-        var category = await context.Categories.FindAsync(id);
+        var updated = await categoriesService.UpdateAsync(id, dto);
 
-        if (category is null)
+        if (!updated)
         {
             return NotFound();
         }
-
-        category.Name = updatedCategory.Name;
-        category.Type = updatedCategory.Type;
-        category.Color = updatedCategory.Color;
-        category.Icon = updatedCategory.Icon;
-
-        await context.SaveChangesAsync();
 
         return NoContent();
     }
@@ -65,15 +53,12 @@ public class CategoriesController(AppDbContext context) : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var category = await context.Categories.FindAsync(id);
+        var deleted = await categoriesService.DeleteAsync(id);
 
-        if (category is null)
+        if (!deleted)
         {
             return NotFound();
         }
-
-        context.Categories.Remove(category);
-        await context.SaveChangesAsync();
 
         return NoContent();
     }
