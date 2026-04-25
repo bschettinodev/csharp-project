@@ -10,4 +10,26 @@ public class Account
     public decimal InitialBalance { get; set; }
     public decimal CurrentBalance { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public void ApplyTransaction(TransactionType type, decimal amount)
+    {
+        if (type == TransactionType.Income)
+        {
+            CurrentBalance += amount;
+            return;
+        }
+
+        CurrentBalance -= amount;
+    }
+
+    public void RevertTransaction(TransactionType type, decimal amount)
+    {
+        if (type == TransactionType.Income)
+        {
+            CurrentBalance -= amount;
+            return;
+        }
+
+        CurrentBalance += amount;
+    }
 }

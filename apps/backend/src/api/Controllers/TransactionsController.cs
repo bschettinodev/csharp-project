@@ -1,33 +1,25 @@
-using api.Data;
-using api.Models;
+using api.Dtos.Transactions;
+using api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TransactionsController(AppDbContext context) : ControllerBase
+public class TransactionsController(TransactionsService transactionsService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Transaction>>> GetAll()
+    public async Task<ActionResult<IEnumerable<TransactionResponseDto>>> GetAll()
     {
-        var transactions = await context
-            .Transactions.Include(transaction => transaction.Account)
-            .Include(transaction => transaction.Category)
-            .OrderByDescending(transaction => transaction.Date)
-            .ToListAsync();
+        var transactions = await transactionsService.GetAllAsync();
 
         return Ok(transactions);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Transaction>> GetById(Guid id)
+    public async Task<ActionResult<TransactionResponseDto>> GetById(Guid id)
     {
-        var transaction = await context
-            .Transactions.Include(transaction => transaction.Account)
-            .Include(transaction => transaction.Category)
-            .FirstOrDefaultAsync(transaction => transaction.Id == id);
+        var transaction = await transactionsService.GetByIdAsync(id);
 
         if (transaction is null)
         {
@@ -38,71 +30,27 @@ public class TransactionsController(AppDbContext context) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Transaction>> Create(Transaction transaction)
+    public async Task<ActionResult<TransactionResponseDto>> Create(CreateTransactionDto dto)
     {
-        var accountExists = await context.Accounts.AnyAsync(account =>
-            account.Id == transaction.AccountId
-        );
-        var categoryExists = await context.Categories.AnyAsync(category =>
-            category.Id == transaction.CategoryId
-        );
+        var transaction = await transactionsService.CreateAsync(dto);
 
-        if (!accountExists)
+        if (transaction is null)
         {
-            return BadRequest("Account not found.");
+            return BadRequest("Account or category not found.");
         }
-
-        if (!categoryExists)
-        {
-            return BadRequest("Category not found.");
-        }
-
-        transaction.Id = Guid.NewGuid();
-        transaction.CreatedAt = DateTime.UtcNow;
-
-        context.Transactions.Add(transaction);
-        await context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetById), new { id = transaction.Id }, transaction);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, Transaction updatedTransaction)
+    public async Task<IActionResult> Update(Guid id, UpdateTransactionDto dto)
     {
-        var transaction = await context.Transactions.FindAsync(id);
+        var updated = await transactionsService.UpdateAsync(id, dto);
 
-        if (transaction is null)
+        if (!updated)
         {
             return NotFound();
         }
-
-        var accountExists = await context.Accounts.AnyAsync(account =>
-            account.Id == updatedTransaction.AccountId
-        );
-        var categoryExists = await context.Categories.AnyAsync(category =>
-            category.Id == updatedTransaction.CategoryId
-        );
-
-        if (!accountExists)
-        {
-            return BadRequest("Account not found.");
-        }
-
-        if (!categoryExists)
-        {
-            return BadRequest("Category not found.");
-        }
-
-        transaction.Description = updatedTransaction.Description;
-        transaction.Amount = updatedTransaction.Amount;
-        transaction.Date = updatedTransaction.Date;
-        transaction.Type = updatedTransaction.Type;
-        transaction.AccountId = updatedTransaction.AccountId;
-        transaction.CategoryId = updatedTransaction.CategoryId;
-        transaction.Notes = updatedTransaction.Notes;
-        transaction.UpdatedAt = DateTime.UtcNow;
-
-        await context.SaveChangesAsync();
 
         return NoContent();
     }
@@ -110,15 +58,12 @@ public class TransactionsController(AppDbContext context) : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var transaction = await context.Transactions.FindAsync(id);
+        var deleted = await transactionsService.DeleteAsync(id);
 
-        if (transaction is null)
+        if (!deleted)
         {
             return NotFound();
         }
-
-        context.Transactions.Remove(transaction);
-        await context.SaveChangesAsync();
 
         return NoContent();
     }

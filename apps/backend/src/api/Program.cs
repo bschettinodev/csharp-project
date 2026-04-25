@@ -1,3 +1,4 @@
+using System.Transactions;
 using api.Data;
 using api.Services;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<AccountsService>();
 builder.Services.AddScoped<CategoriesService>();
+builder.Services.AddScoped<TransactionsService>();
 
 var app = builder.Build();
 
