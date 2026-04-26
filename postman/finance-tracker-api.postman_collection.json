@@ -1,0 +1,233 @@
+{
+  "info": {
+    "name": "Finance Tracker API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5057" },
+    { "key": "accountId", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "incomeCategoryId", "value": "" },
+    { "key": "transactionId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 - Create Account",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/accounts",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nubank\",\n  \"type\": 1,\n  \"initialBalance\": 1000\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('accountId', res.id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "02 - Create Expense Category",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/categories",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Alimentação\",\n  \"type\": 2,\n  \"color\": \"#FF0000\",\n  \"icon\": \"food\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('categoryId', res.id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "03 - Create Income Category",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/categories",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Salário\",\n  \"type\": 1,\n  \"color\": \"#00AA00\",\n  \"icon\": \"salary\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('incomeCategoryId', res.id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "04 - Create Valid Transaction",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/transactions",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Almoço\",\n  \"amount\": 35,\n  \"date\": \"2026-04-25T12:00:00Z\",\n  \"type\": 2,\n  \"accountId\": \"{{accountId}}\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"notes\": \"Comida\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+            "const res = pm.response.json();",
+            "pm.collectionVariables.set('transactionId', res.id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "05 - Get Accounts",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/accounts"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+            "const res = pm.response.json();",
+            "pm.test('Account balance updated', () => pm.expect(res[0].currentBalance).to.eql(965));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "06 - Duplicate Account",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/accounts",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nubank\",\n  \"type\": 1,\n  \"initialBalance\": 1000\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.test('Status is 409', () => pm.response.to.have.status(409));"] }
+      }]
+    },
+    {
+      "name": "07 - Invalid Account Negative Balance",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/accounts",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Inter\",\n  \"type\": 1,\n  \"initialBalance\": -100\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.test('Status is 400', () => pm.response.to.have.status(400));"] }
+      }]
+    },
+    {
+      "name": "08 - Invalid Category Color",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/categories",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Transporte\",\n  \"type\": 2,\n  \"color\": \"red\",\n  \"icon\": \"car\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.test('Status is 400', () => pm.response.to.have.status(400));"] }
+      }]
+    },
+    {
+      "name": "09 - Transaction Wrong Category Type",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/transactions",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Compra errada\",\n  \"amount\": 10,\n  \"date\": \"2026-04-25T12:00:00Z\",\n  \"type\": 2,\n  \"accountId\": \"{{accountId}}\",\n  \"categoryId\": \"{{incomeCategoryId}}\",\n  \"notes\": \"Categoria income em despesa\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.test('Status is 400', () => pm.response.to.have.status(400));"] }
+      }]
+    },
+    {
+      "name": "10 - Transaction Insufficient Balance",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/transactions",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Compra cara\",\n  \"amount\": 999999,\n  \"date\": \"2026-04-25T12:00:00Z\",\n  \"type\": 2,\n  \"accountId\": \"{{accountId}}\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"notes\": \"Saldo insuficiente\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.test('Status is 400', () => pm.response.to.have.status(400));"] }
+      }]
+    },
+    {
+      "name": "11 - Delete Account With Transaction",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/accounts/{{accountId}}"
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.test('Status is 409', () => pm.response.to.have.status(409));"] }
+      }]
+    },
+    {
+      "name": "12 - Delete Category With Transaction",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/categories/{{categoryId}}"
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.test('Status is 409', () => pm.response.to.have.status(409));"] }
+      }]
+    },
+    {
+      "name": "13 - Get Transactions",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/transactions"
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.test('Status is 200', () => pm.response.to.have.status(200));"] }
+      }]
+    }
+  ]
+}
