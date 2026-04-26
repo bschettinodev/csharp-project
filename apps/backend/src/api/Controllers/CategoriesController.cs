@@ -19,32 +19,37 @@ public class CategoriesController(CategoriesService categoriesService) : Control
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<CategoryResponseDto>> GetById(Guid id)
     {
-        var category = await categoriesService.GetByIdAsync(id);
+        var result = await categoriesService.GetByIdAsync(id);
 
-        if (category is null)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
-        return Ok(category);
+        return Ok(result.Value);
     }
 
     [HttpPost]
     public async Task<ActionResult<CategoryResponseDto>> Create(CreateCategoryDto dto)
     {
-        var category = await categoriesService.CreateAsync(dto);
+        var result = await categoriesService.CreateAsync(dto);
 
-        return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
+        if (!result.IsSuccess)
+        {
+            return StatusCode(result.StatusCode, new { message = result.Error });
+        }
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateCategoryDto dto)
     {
-        var updated = await categoriesService.UpdateAsync(id, dto);
+        var result = await categoriesService.UpdateAsync(id, dto);
 
-        if (!updated)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
         return NoContent();
@@ -53,11 +58,11 @@ public class CategoriesController(CategoriesService categoriesService) : Control
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await categoriesService.DeleteAsync(id);
+        var result = await categoriesService.DeleteAsync(id);
 
-        if (!deleted)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
         return NoContent();

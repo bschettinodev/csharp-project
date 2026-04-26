@@ -19,37 +19,37 @@ public class TransactionsController(TransactionsService transactionsService) : C
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TransactionResponseDto>> GetById(Guid id)
     {
-        var transaction = await transactionsService.GetByIdAsync(id);
+        var result = await transactionsService.GetByIdAsync(id);
 
-        if (transaction is null)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
-        return Ok(transaction);
+        return Ok(result.Value);
     }
 
     [HttpPost]
     public async Task<ActionResult<TransactionResponseDto>> Create(CreateTransactionDto dto)
     {
-        var transaction = await transactionsService.CreateAsync(dto);
+        var result = await transactionsService.CreateAsync(dto);
 
-        if (transaction is null)
+        if (!result.IsSuccess)
         {
-            return BadRequest("Account or category not found.");
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
-        return CreatedAtAction(nameof(GetById), new { id = transaction.Id }, transaction);
+        return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateTransactionDto dto)
     {
-        var updated = await transactionsService.UpdateAsync(id, dto);
+        var result = await transactionsService.UpdateAsync(id, dto);
 
-        if (!updated)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
         return NoContent();
@@ -58,11 +58,11 @@ public class TransactionsController(TransactionsService transactionsService) : C
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await transactionsService.DeleteAsync(id);
+        var result = await transactionsService.DeleteAsync(id);
 
-        if (!deleted)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
         return NoContent();
