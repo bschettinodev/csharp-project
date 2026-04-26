@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import {
@@ -16,7 +18,11 @@ import {
   Typography,
 } from '@mui/material';
 
+import { firebase } from '@/firebase/app';
+
 export function LoginPage() {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -28,10 +34,19 @@ export function LoginPage() {
     setLoading(true);
     setErrorMessage('');
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      await firebase().handlers.signIn({
+        email: form.email,
+        password: form.password,
+      });
 
-    setLoading(false);
-    setErrorMessage('Login is not connected yet.');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error(error);
+      setErrorMessage('Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
