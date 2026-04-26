@@ -1,3 +1,4 @@
+using api.Common;
 using api.Dtos.Accounts;
 using api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -19,32 +20,37 @@ public class AccountsController(AccountsService accountsService) : ControllerBas
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<AccountResponseDto>> GetById(Guid id)
     {
-        var account = await accountsService.GetByIdAsync(id);
+        var result = await accountsService.GetByIdAsync(id);
 
-        if (account is null)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
-        return Ok(account);
+        return Ok(result.Value);
     }
 
     [HttpPost]
     public async Task<ActionResult<AccountResponseDto>> Create(CreateAccountDto dto)
     {
-        var account = await accountsService.CreateAsync(dto);
+        var result = await accountsService.CreateAsync(dto);
 
-        return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
+        if (!result.IsSuccess)
+        {
+            return StatusCode(result.StatusCode, new { message = result.Error });
+        }
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateAccountDto dto)
     {
-        var updated = await accountsService.UpdateAsync(id, dto);
+        var result = await accountsService.UpdateAsync(id, dto);
 
-        if (!updated)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
         return NoContent();
@@ -53,11 +59,11 @@ public class AccountsController(AccountsService accountsService) : ControllerBas
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await accountsService.DeleteAsync(id);
+        var result = await accountsService.DeleteAsync(id);
 
-        if (!deleted)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return StatusCode(result.StatusCode, new { message = result.Error });
         }
 
         return NoContent();
