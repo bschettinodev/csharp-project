@@ -10,9 +10,9 @@ import {
 } from 'react-router-dom';
 
 import { CssBaseline, ThemeProvider } from '@mui/material';
-
-import { DashboardLayout } from '@/components/Layout/DashboardLayout/DashboardLayout';
+import { MobileAppLayout } from '@/components/Layout/MobileAppLayout/MobileAppLayout';
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
+
 import { LoginPage } from '@/pages/Login/LoginPage';
 
 const router = createBrowserRouter([
@@ -26,7 +26,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: <DashboardLayout />,
+    element: <MobileAppLayout />,
     children: [
       {
         index: true,
