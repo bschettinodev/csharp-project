@@ -7,9 +7,6 @@ export const theme = createTheme({
     mode: 'dark',
     ...palette,
   },
-  shape: {
-    borderRadius: 20,
-  },
   typography: {
     fontFamily: 'Inter, sans-serif',
   },

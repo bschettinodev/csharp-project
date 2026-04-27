@@ -4,14 +4,14 @@ export const palette = {
     paper: '#151F3A',
   },
   primary: {
-    main: '#F8FF4F',
+    main: '#F5F76A',
     contrastText: '#0B1224',
   },
   success: {
     main: '#55E27A',
   },
   error: {
-    main: '#FF5C8A',
+    main: '#f71f1f',
   },
   text: {
     primary: '#FFFFFF',
