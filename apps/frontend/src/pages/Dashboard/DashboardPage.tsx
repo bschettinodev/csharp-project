@@ -3,6 +3,7 @@ import { Box, Stack } from '@mui/material';
 
 import { ActionCard } from '@/components/cards/ActionCard';
 import { BalanceSummaryCard } from '@/components/cards/BalanceSummaryCard';
+import { TransactionsSection } from '@/components/transactions/TransationcsSection';
 
 export function DashboardPage() {
   return (
@@ -18,10 +19,12 @@ export function DashboardPage() {
 
         <ActionCard
           title='Add Expense'
-          color='#FF5252'
+          color='#FF7A7A'
           icon={<AddRoundedIcon sx={{ color: '#000', fontSize: 18 }} />}
         />
       </Stack>
+
+      <TransactionsSection />
     </Box>
   );
 }
