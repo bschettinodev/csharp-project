@@ -11,6 +11,14 @@ export const theme = createTheme({
     fontFamily: 'Inter, sans-serif',
   },
   components: {
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          backgroundImage: 'none',
+          borderRadius: 24,
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
