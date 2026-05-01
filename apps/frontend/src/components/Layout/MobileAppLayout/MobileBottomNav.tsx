@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
@@ -6,6 +8,8 @@ import WalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import { Box, Fab, IconButton, Paper } from '@mui/material';
 
 export function MobileBottomNav() {
+  const navigate = useNavigate();
+
   return (
     <Paper
       elevation={0}
@@ -27,7 +31,7 @@ export function MobileBottomNav() {
         zIndex: 10,
       }}
     >
-      <IconButton color='primary'>
+      <IconButton color='primary' onClick={() => navigate('/dashboard')}>
         <HomeRoundedIcon />
       </IconButton>
 
@@ -41,7 +45,10 @@ export function MobileBottomNav() {
         <ReceiptLongRoundedIcon />
       </IconButton>
 
-      <IconButton sx={{ color: 'text.secondary' }}>
+      <IconButton
+        sx={{ color: 'text.secondary' }}
+        onClick={() => navigate('/accounts')}
+      >
         <WalletRoundedIcon />
       </IconButton>
 
