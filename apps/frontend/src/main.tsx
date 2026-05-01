@@ -14,6 +14,7 @@ import { MobileAppLayout } from '@/components/Layout/MobileAppLayout/MobileAppLa
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
 
 import { LoginPage } from '@/pages/Login/LoginPage';
+import { AccountsPage } from '@/pages/Accounts/AccountsPage';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,16 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <DashboardPage />,
+      },
+    ],
+  },
+  {
+    path: '/accounts',
+    element: <MobileAppLayout />,
+    children: [
+      {
+        index: true,
+        element: <AccountsPage />,
       },
     ],
   },
