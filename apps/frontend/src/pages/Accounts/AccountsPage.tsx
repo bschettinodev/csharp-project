@@ -1,19 +1,31 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 
+import { getAccounts } from '@/api/accounts/accounts.api';
+import type { Account } from '@/api/accounts/accounts.types';
 import { AccountCard } from '@/components/cards/AccountCard';
 import { AccountDialog } from '@/components/dialogs/AccountsDialog';
-
-const accounts = [
-  { name: 'Nubank', type: 'Checking', balance: 'R$ 2.100,00' },
-  { name: 'Itaú', type: 'Savings', balance: 'R$ 1.800,00' },
-  { name: 'Wallet', type: 'Cash', balance: 'R$ 350,00' },
-];
+import { accountTypeLabels } from '@/enums/account';
 
 export function AccountsPage() {
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
+
+  const fetchAccounts = useCallback(async () => {
+    const data = await getAccounts();
+    setAccounts(data);
+  }, []);
+
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
+
+  const totalBalance = accounts.reduce(
+    (total, account) => total + account.currentBalance,
+    0
+  );
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
@@ -50,23 +62,36 @@ export function AccountsPage() {
         </IconButton>
       </Stack>
 
-      <CardSummary />
+      <CardSummary totalBalance={totalBalance} />
 
       <Stack sx={{ gap: 1.5 }}>
         {accounts.map((account) => (
-          <AccountCard key={account.name} {...account} />
+          <AccountCard
+            key={account.id}
+            name={account.name}
+            type={accountTypeLabels[account.type]}
+            balance={account.currentBalance.toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            })}
+          />
         ))}
       </Stack>
 
       <AccountDialog
         open={accountDialogOpen}
         onClose={() => setAccountDialogOpen(false)}
+        onCreated={fetchAccounts}
       />
     </Box>
   );
 }
 
-function CardSummary() {
+type CardSummaryProps = {
+  totalBalance: number;
+};
+
+function CardSummary({ totalBalance }: CardSummaryProps) {
   return (
     <Box
       sx={{
@@ -81,7 +106,10 @@ function CardSummary() {
       </Typography>
 
       <Typography sx={{ fontSize: 32, fontWeight: 900, mt: 0.5 }}>
-        R$ 4.250,00
+        {totalBalance.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        })}
       </Typography>
     </Box>
   );
