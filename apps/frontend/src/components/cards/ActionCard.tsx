@@ -48,7 +48,7 @@ export function ActionCard({ title, color, icon, onClick }: ActionCardProps) {
 
         <Typography
           sx={{
-            fontSize: 17,
+            fontSize: 15,
             fontWeight: 700,
             color: 'common.white',
           }}
