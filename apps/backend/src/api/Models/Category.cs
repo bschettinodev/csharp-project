@@ -13,6 +13,4 @@ public class Category
     public string Color { get; set; } = "#FFFFFF";
 
     public string? Icon { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
