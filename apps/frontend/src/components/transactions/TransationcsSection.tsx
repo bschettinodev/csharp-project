@@ -1,29 +1,27 @@
 import { Box, Stack, Typography } from '@mui/material';
 
+import type { Transaction } from '@/api/transactions/transactions.types';
+import { TransactionType } from '@/enums/transaction';
+
 import { TransactionItem } from './TransactionItem';
 
-const transactions = [
-  {
-    title: 'Market',
-    category: 'Food',
-    amount: 'R$ 120,00',
-    type: 'expense' as const,
-  },
-  {
-    title: 'Salary',
-    category: 'Income',
-    amount: 'R$ 6.000,00',
-    type: 'income' as const,
-  },
-  {
-    title: 'Netflix',
-    category: 'Subscription',
-    amount: 'R$ 39,90',
-    type: 'expense' as const,
-  },
-];
+type TransactionsSectionProps = {
+  transactions: Transaction[];
+};
 
-export function TransactionsSection() {
+export function TransactionsSection({
+  transactions,
+}: TransactionsSectionProps) {
+  const todayTransactions = transactions;
+
+  const total = todayTransactions.reduce((acc, transaction) => {
+    if (transaction.type === TransactionType.Income) {
+      return acc + transaction.amount;
+    }
+
+    return acc - transaction.amount;
+  }, 0);
+
   return (
     <Box>
       <Stack
@@ -38,7 +36,12 @@ export function TransactionsSection() {
           Transactions
         </Typography>
 
-        <Typography sx={{ fontWeight: 900 }}>- R$ 159,90</Typography>
+        <Typography sx={{ fontWeight: 900 }}>
+          {total.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          })}
+        </Typography>
       </Stack>
 
       <Stack
@@ -54,13 +57,13 @@ export function TransactionsSection() {
         </Typography>
 
         <Typography variant='body2' sx={{ color: 'text.secondary' }}>
-          27 Apr 2026
+          {new Date().toLocaleDateString('pt-BR')}
         </Typography>
       </Stack>
 
       <Stack sx={{ gap: 1.25 }}>
-        {transactions.map((transaction) => (
-          <TransactionItem key={transaction.title} {...transaction} />
+        {todayTransactions.map((transaction) => (
+          <TransactionItem key={transaction.id} transaction={transaction} />
         ))}
       </Stack>
     </Box>

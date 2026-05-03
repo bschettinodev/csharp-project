@@ -12,7 +12,7 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260503010746_InitialCreate")]
+    [Migration("20260503161218_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -79,7 +79,7 @@ namespace api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Id = new Guid("11111111-1111-4111-8111-111111111111"),
                             Color = "#55E27A",
                             Icon = "salary",
                             Name = "Salary",
@@ -87,7 +87,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("11111111-1111-1111-1111-111111111112"),
+                            Id = new Guid("11111111-1111-4111-8111-111111111112"),
                             Color = "#6EE7B7",
                             Icon = "freelance",
                             Name = "Freelance",
@@ -95,7 +95,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("11111111-1111-1111-1111-111111111113"),
+                            Id = new Guid("11111111-1111-4111-8111-111111111113"),
                             Color = "#A3E635",
                             Icon = "investment",
                             Name = "Investments",
@@ -103,7 +103,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("11111111-1111-1111-1111-111111111114"),
+                            Id = new Guid("11111111-1111-4111-8111-111111111114"),
                             Color = "#22C55E",
                             Icon = "refund",
                             Name = "Refund",
@@ -111,7 +111,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222221"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222221"),
                             Color = "#F97316",
                             Icon = "food",
                             Name = "Food",
@@ -119,7 +119,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222222"),
                             Color = "#38BDF8",
                             Icon = "transport",
                             Name = "Transport",
@@ -127,7 +127,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222223"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222223"),
                             Color = "#F472B6",
                             Icon = "shopping",
                             Name = "Shopping",
@@ -135,7 +135,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222224"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222224"),
                             Color = "#A78BFA",
                             Icon = "housing",
                             Name = "Housing",
@@ -143,7 +143,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222225"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222225"),
                             Color = "#FBBF24",
                             Icon = "bills",
                             Name = "Bills",
@@ -151,7 +151,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222226"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222226"),
                             Color = "#F87171",
                             Icon = "health",
                             Name = "Health",
@@ -159,7 +159,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222227"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222227"),
                             Color = "#60A5FA",
                             Icon = "education",
                             Name = "Education",
@@ -167,7 +167,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222228"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222228"),
                             Color = "#FACC15",
                             Icon = "entertainment",
                             Name = "Entertainment",
@@ -175,7 +175,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222229"),
+                            Id = new Guid("22222222-2222-4222-8222-222222222229"),
                             Color = "#818CF8",
                             Icon = "subscriptions",
                             Name = "Subscriptions",
@@ -183,7 +183,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222230"),
+                            Id = new Guid("22222222-2222-4222-8222-22222222223a"),
                             Color = "#34D399",
                             Icon = "groceries",
                             Name = "Groceries",
@@ -191,7 +191,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222231"),
+                            Id = new Guid("22222222-2222-4222-8222-22222222223b"),
                             Color = "#2DD4BF",
                             Icon = "travel",
                             Name = "Travel",
@@ -199,7 +199,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222232"),
+                            Id = new Guid("22222222-2222-4222-8222-22222222223c"),
                             Color = "#FB7185",
                             Icon = "personal-care",
                             Name = "Personal Care",
@@ -207,7 +207,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222233"),
+                            Id = new Guid("22222222-2222-4222-8222-22222222223d"),
                             Color = "#C084FC",
                             Icon = "pets",
                             Name = "Pets",
@@ -215,7 +215,7 @@ namespace api.Migrations
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222234"),
+                            Id = new Guid("22222222-2222-4222-8222-22222222223e"),
                             Color = "#94A3B8",
                             Icon = "taxes",
                             Name = "Taxes",

@@ -176,6 +176,8 @@ public class TransactionsService(AppDbContext context)
             AccountName = transaction.Account.Name,
             CategoryId = transaction.CategoryId,
             CategoryName = transaction.Category.Name,
+            CategoryColor = transaction.Category.Color,
+            CategoryIcon = transaction.Category.Icon,
             Notes = transaction.Notes,
             CreatedAt = transaction.CreatedAt,
             UpdatedAt = transaction.UpdatedAt,

@@ -19,7 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasData(
                 new Category
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Id = Guid.Parse("11111111-1111-4111-8111-111111111111"),
                     Name = "Salary",
                     Type = TransactionType.Income,
                     Color = "#55E27A",
@@ -27,7 +27,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111112"),
+                    Id = Guid.Parse("11111111-1111-4111-8111-111111111112"),
                     Name = "Freelance",
                     Type = TransactionType.Income,
                     Color = "#6EE7B7",
@@ -35,7 +35,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111113"),
+                    Id = Guid.Parse("11111111-1111-4111-8111-111111111113"),
                     Name = "Investments",
                     Type = TransactionType.Income,
                     Color = "#A3E635",
@@ -43,15 +43,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111114"),
+                    Id = Guid.Parse("11111111-1111-4111-8111-111111111114"),
                     Name = "Refund",
                     Type = TransactionType.Income,
                     Color = "#22C55E",
                     Icon = "refund",
                 },
+                // Expense
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222221"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222221"),
                     Name = "Food",
                     Type = TransactionType.Expense,
                     Color = "#F97316",
@@ -59,7 +60,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222222"),
                     Name = "Transport",
                     Type = TransactionType.Expense,
                     Color = "#38BDF8",
@@ -67,7 +68,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222223"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222223"),
                     Name = "Shopping",
                     Type = TransactionType.Expense,
                     Color = "#F472B6",
@@ -75,7 +76,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222224"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222224"),
                     Name = "Housing",
                     Type = TransactionType.Expense,
                     Color = "#A78BFA",
@@ -83,7 +84,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222225"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222225"),
                     Name = "Bills",
                     Type = TransactionType.Expense,
                     Color = "#FBBF24",
@@ -91,7 +92,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222226"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222226"),
                     Name = "Health",
                     Type = TransactionType.Expense,
                     Color = "#F87171",
@@ -99,7 +100,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222227"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222227"),
                     Name = "Education",
                     Type = TransactionType.Expense,
                     Color = "#60A5FA",
@@ -107,7 +108,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222228"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222228"),
                     Name = "Entertainment",
                     Type = TransactionType.Expense,
                     Color = "#FACC15",
@@ -115,7 +116,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222229"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-222222222229"),
                     Name = "Subscriptions",
                     Type = TransactionType.Expense,
                     Color = "#818CF8",
@@ -123,7 +124,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222230"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-22222222223a"),
                     Name = "Groceries",
                     Type = TransactionType.Expense,
                     Color = "#34D399",
@@ -131,7 +132,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222231"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-22222222223b"),
                     Name = "Travel",
                     Type = TransactionType.Expense,
                     Color = "#2DD4BF",
@@ -139,7 +140,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222232"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-22222222223c"),
                     Name = "Personal Care",
                     Type = TransactionType.Expense,
                     Color = "#FB7185",
@@ -147,7 +148,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222233"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-22222222223d"),
                     Name = "Pets",
                     Type = TransactionType.Expense,
                     Color = "#C084FC",
@@ -155,7 +156,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 },
                 new Category
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222234"),
+                    Id = Guid.Parse("22222222-2222-4222-8222-22222222223e"),
                     Name = "Taxes",
                     Type = TransactionType.Expense,
                     Color = "#94A3B8",

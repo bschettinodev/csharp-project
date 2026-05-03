@@ -1,17 +1,47 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { Box, Stack } from '@mui/material';
 
+import { getTransactions } from '@/api/transactions/transactions.api';
+import type { Transaction } from '@/api/transactions/transactions.types';
 import { ActionCard } from '@/components/cards/ActionCard';
 import { BalanceSummaryCard } from '@/components/cards/BalanceSummaryCard';
-import { TransactionDialog } from '@/components/dialogs/TransactionDialog';
+import {
+  TransactionDialog,
+  type TransactionDialogType,
+} from '@/components/dialogs/TransactionDialog';
 import { TransactionsSection } from '@/components/transactions/TransationcsSection';
-
-import type { TransactionDialogType } from '@/components/dialogs/TransactionDialog';
+import { TransactionType } from '@/enums/transaction';
 
 export function DashboardPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [dialogType, setDialogType] = useState<TransactionDialogType>('income');
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const fetchTransactions = useCallback(async () => {
+    const data = await getTransactions();
+    setTransactions(data);
+  }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  const { totalIncome, totalExpenses, totalBalance } = useMemo(() => {
+    const totalIncome = transactions
+      .filter((transaction) => transaction.type === TransactionType.Income)
+      .reduce((total, transaction) => total + transaction.amount, 0);
+
+    const totalExpenses = transactions
+      .filter((transaction) => transaction.type === TransactionType.Expense)
+      .reduce((total, transaction) => total + transaction.amount, 0);
+
+    return {
+      totalIncome,
+      totalExpenses,
+      totalBalance: totalIncome - totalExpenses,
+    };
+  }, [transactions]);
 
   function openTransactionDialog(type: TransactionDialogType) {
     setDialogType(type);
@@ -21,7 +51,11 @@ export function DashboardPage() {
   return (
     <>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-        <BalanceSummaryCard />
+        <BalanceSummaryCard
+          totalBalance={totalBalance}
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+        />
 
         <Stack direction='row' sx={{ gap: 2 }}>
           <ActionCard
@@ -39,13 +73,14 @@ export function DashboardPage() {
           />
         </Stack>
 
-        <TransactionsSection />
+        <TransactionsSection transactions={transactions} />
       </Box>
 
       <TransactionDialog
         open={dialogOpen}
         type={dialogType}
         onClose={() => setDialogOpen(false)}
+        onCreated={fetchTransactions}
       />
     </>
   );
