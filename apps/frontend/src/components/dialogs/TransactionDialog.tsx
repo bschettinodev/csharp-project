@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import {
   Button,
   Dialog,
@@ -9,29 +11,18 @@ import {
   TextField,
 } from '@mui/material';
 
-export type TransactionType = 'income' | 'expense';
+import { getAccounts } from '@/api/accounts/accounts.api';
+import type { Account } from '@/api/accounts/accounts.types';
+import { getCategories } from '@/api/categories/categories.api';
+import type { Category } from '@/api/categories/categories.types';
+import { TransactionType as TransactionTypeEnum } from '@/enums/transaction';
+
+export type TransactionDialogType = 'income' | 'expense';
 
 type TransactionDialogProps = {
   open: boolean;
-  type: TransactionType;
+  type: TransactionDialogType;
   onClose: () => void;
-};
-
-const accounts = [
-  { id: '1', name: 'Nubank' },
-  { id: '2', name: 'Wallet' },
-];
-
-const categories = {
-  income: [
-    { id: '1', name: 'Salary' },
-    { id: '2', name: 'Freelance' },
-  ],
-  expense: [
-    { id: '3', name: 'Food' },
-    { id: '4', name: 'Transport' },
-    { id: '5', name: 'Shopping' },
-  ],
 };
 
 export function TransactionDialog({
@@ -39,11 +30,37 @@ export function TransactionDialog({
   type,
   onClose,
 }: TransactionDialogProps) {
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+
   const isIncome = type === 'income';
 
-  function handleSubmit(event: React.ChangeEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const fetchDialogData = useCallback(async () => {
+    const [accountsData, categoriesData] = await Promise.all([
+      getAccounts(),
+      getCategories(),
+    ]);
 
+    setAccounts(accountsData);
+    setCategories(categoriesData);
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      fetchDialogData();
+    }
+  }, [open, fetchDialogData]);
+
+  const filteredCategories = useMemo(() => {
+    const transactionType = isIncome
+      ? TransactionTypeEnum.Income
+      : TransactionTypeEnum.Expense;
+
+    return categories.filter((category) => category.type === transactionType);
+  }, [categories, isIncome]);
+
+  function handleSubmit(event: React.SyntheticEvent<HTMLFormElement>) {
+    event.preventDefault();
     onClose();
   }
 
@@ -129,7 +146,7 @@ export function TransactionDialog({
             defaultValue=''
             helperText={`Only ${isIncome ? 'income' : 'expense'} categories are shown`}
           >
-            {categories[type].map((category) => (
+            {filteredCategories.map((category) => (
               <MenuItem key={category.id} value={category.id}>
                 {category.name}
               </MenuItem>

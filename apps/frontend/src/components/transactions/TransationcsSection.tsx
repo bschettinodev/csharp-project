@@ -21,24 +21,6 @@ const transactions = [
     amount: 'R$ 39,90',
     type: 'expense' as const,
   },
-  {
-    title: 'Netflix',
-    category: 'Subscription',
-    amount: 'R$ 39,90',
-    type: 'expense' as const,
-  },
-  {
-    title: 'Netflix',
-    category: 'Subscription',
-    amount: 'R$ 39,90',
-    type: 'expense' as const,
-  },
-  {
-    title: 'Netflix',
-    category: 'Subscription',
-    amount: 'R$ 39,90',
-    type: 'expense' as const,
-  },
 ];
 
 export function TransactionsSection() {

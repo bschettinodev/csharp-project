@@ -7,13 +7,13 @@ import { BalanceSummaryCard } from '@/components/cards/BalanceSummaryCard';
 import { TransactionDialog } from '@/components/dialogs/TransactionDialog';
 import { TransactionsSection } from '@/components/transactions/TransationcsSection';
 
-import type { TransactionType } from '@/components/dialogs/TransactionDialog';
+import type { TransactionDialogType } from '@/components/dialogs/TransactionDialog';
 
 export function DashboardPage() {
-  const [dialogType, setDialogType] = useState<TransactionType>('income');
+  const [dialogType, setDialogType] = useState<TransactionDialogType>('income');
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  function openTransactionDialog(type: TransactionType) {
+  function openTransactionDialog(type: TransactionDialogType) {
     setDialogType(type);
     setDialogOpen(true);
   }
