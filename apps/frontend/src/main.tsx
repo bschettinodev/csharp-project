@@ -9,6 +9,9 @@ import {
   RouterProvider,
 } from 'react-router-dom';
 
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { MobileAppLayout } from '@/components/Layout/MobileAppLayout/MobileAppLayout';
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
@@ -50,8 +53,10 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <RouterProvider router={router} />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <CssBaseline />
+        <RouterProvider router={router} />
+      </LocalizationProvider>
     </ThemeProvider>
   </StrictMode>
 );

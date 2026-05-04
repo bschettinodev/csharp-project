@@ -1,19 +1,15 @@
 import { Box, Card, Stack, Typography } from '@mui/material';
 
+import type { Transaction } from '@/api/transactions/transactions.types';
+import { CategoryIcon } from '@/components/common/CategoryIcon';
+import { TransactionType } from '@/enums/transaction';
+
 type TransactionItemProps = {
-  title: string;
-  category: string;
-  amount: string;
-  type: 'income' | 'expense';
+  transaction: Transaction;
 };
 
-export function TransactionItem({
-  title,
-  category,
-  amount,
-  type,
-}: TransactionItemProps) {
-  const isIncome = type === 'income';
+export function TransactionItem({ transaction }: TransactionItemProps) {
+  const isIncome = transaction.type === TransactionType.Income;
 
   return (
     <Card
@@ -38,14 +34,29 @@ export function TransactionItem({
               width: 42,
               height: 42,
               borderRadius: '50%',
-              bgcolor: isIncome ? '#55E27A' : '#FF7A7A',
+              bgcolor: `${transaction.categoryColor}22`,
+              border: `1px solid ${transaction.categoryColor}33`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-          />
+          >
+            <CategoryIcon
+              icon={transaction.categoryIcon}
+              sx={{
+                fontSize: 21,
+                color: transaction.categoryColor,
+              }}
+            />
+          </Box>
 
           <Box>
-            <Typography sx={{ fontWeight: 800 }}>{title}</Typography>
+            <Typography sx={{ fontWeight: 800 }}>
+              {transaction.description}
+            </Typography>
+
             <Typography variant='caption' color='text.secondary'>
-              {category}
+              {transaction.categoryName}
             </Typography>
           </Box>
         </Stack>
@@ -56,7 +67,11 @@ export function TransactionItem({
             color: isIncome ? '#55E27A' : '#FF7A7A',
           }}
         >
-          {isIncome ? '+' : '-'} {amount}
+          {isIncome ? '+' : '-'}{' '}
+          {transaction.amount.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          })}
         </Typography>
       </Stack>
     </Card>

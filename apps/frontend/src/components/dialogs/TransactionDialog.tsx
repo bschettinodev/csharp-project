@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
+  Alert,
   Button,
   Dialog,
   DialogActions,
@@ -11,10 +12,25 @@ import {
   TextField,
 } from '@mui/material';
 
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
+import dayjs from 'dayjs';
+
 import { getAccounts } from '@/api/accounts/accounts.api';
 import type { Account } from '@/api/accounts/accounts.types';
 import { getCategories } from '@/api/categories/categories.api';
 import type { Category } from '@/api/categories/categories.types';
+import { createTransaction } from '@/api/transactions/transactions.api';
+
+import {
+  createTransactionSchema,
+  createTransactionDefaults,
+  type CreateTransactionFormValues,
+  type CreateTransactionPayload,
+} from '@/api/transactions/transactions.schema';
+
 import { TransactionType as TransactionTypeEnum } from '@/enums/transaction';
 
 export type TransactionDialogType = 'income' | 'expense';
@@ -23,17 +39,41 @@ type TransactionDialogProps = {
   open: boolean;
   type: TransactionDialogType;
   onClose: () => void;
+  onCreated?: () => void;
 };
 
 export function TransactionDialog({
   open,
   type,
   onClose,
+  onCreated,
 }: TransactionDialogProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const isIncome = type === 'income';
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CreateTransactionFormValues, unknown, CreateTransactionPayload>({
+    resolver: zodResolver(createTransactionSchema),
+    defaultValues: {
+      ...createTransactionDefaults,
+      type: isIncome ? TransactionTypeEnum.Income : TransactionTypeEnum.Expense,
+    },
+  });
+
+  const handleDialogClose = useCallback(() => {
+    reset();
+    setErrorMessage('');
+    onClose();
+  }, [onClose, reset]);
 
   const fetchDialogData = useCallback(async () => {
     const [accountsData, categoriesData] = await Promise.all([
@@ -48,8 +88,15 @@ export function TransactionDialog({
   useEffect(() => {
     if (open) {
       fetchDialogData();
+      reset({
+        ...createTransactionDefaults,
+        type: isIncome
+          ? TransactionTypeEnum.Income
+          : TransactionTypeEnum.Expense,
+        date: dayjs(),
+      });
     }
-  }, [open, fetchDialogData]);
+  }, [open, fetchDialogData, reset, isIncome]);
 
   const filteredCategories = useMemo(() => {
     const transactionType = isIncome
@@ -59,115 +106,154 @@ export function TransactionDialog({
     return categories.filter((category) => category.type === transactionType);
   }, [categories, isIncome]);
 
-  function handleSubmit(event: React.SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault();
-    onClose();
+  async function onSubmit(data: CreateTransactionPayload) {
+    console.log(data);
+    setIsSaving(true);
+    setErrorMessage('');
+
+    try {
+      await createTransaction(data);
+      onCreated?.();
+      handleDialogClose();
+    } catch (error) {
+      console.error(error);
+      setErrorMessage('Could not create transaction. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth='xs'>
+    <Dialog open={open} onClose={handleDialogClose} fullWidth maxWidth='xs'>
       <DialogTitle sx={{ fontWeight: 800 }}>
         {isIncome ? 'Add Income' : 'Add Expense'}
       </DialogTitle>
 
       <DialogContent sx={{ pt: 1 }}>
-        <form onSubmit={handleSubmit}>
+        {errorMessage && <Alert severity='error'>{errorMessage}</Alert>}
+
+        <form
+          onSubmit={handleSubmit(onSubmit, (formErrors) => {
+            console.log(formErrors);
+          })}
+        >
           <TextField
-            id='transaction-description'
-            name='description'
+            {...register('description')}
             label='Description'
-            placeholder='Ex: Salary, Market, Netflix...'
             fullWidth
             required
             margin='normal'
+            error={!!errors.description}
+            helperText={errors.description?.message}
+            disabled={isSaving}
           />
-
           <TextField
-            id='transaction-amount'
-            name='amount'
+            {...register('amount')}
             label='Amount'
             placeholder='0.00'
             fullWidth
             required
             margin='normal'
+            error={!!errors.amount}
+            helperText={errors.amount?.message}
+            disabled={isSaving}
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position='start'>R$</InputAdornment>
                 ),
               },
-              htmlInput: {
-                inputMode: 'decimal',
-              },
             }}
           />
-
-          <TextField
-            id='transaction-date'
+          <Controller
             name='date'
-            label='Date'
-            type='date'
-            fullWidth
-            required
-            margin='normal'
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                label='Date'
+                value={field.value}
+                onChange={field.onChange}
+                disabled={isSaving}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    margin: 'normal',
+                    error: !!errors.date,
+                    helperText: errors.date?.message,
+                  },
+                }}
+              />
+            )}
           />
-
-          <TextField
-            id='transaction-account'
+          <Controller
             name='accountId'
-            label='Account'
-            select
-            fullWidth
-            required
-            margin='normal'
-            defaultValue=''
-            helperText='Select the account affected by this transaction'
-          >
-            {accounts.map((account) => (
-              <MenuItem key={account.id} value={account.id}>
-                {account.name}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            id='transaction-category'
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ''}
+                label='Account'
+                select
+                fullWidth
+                required
+                margin='normal'
+                error={!!errors.accountId}
+                helperText={errors.accountId?.message}
+                disabled={isSaving}
+              >
+                {accounts.map((account) => (
+                  <MenuItem key={account.id} value={account.id}>
+                    {account.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          <Controller
             name='categoryId'
-            label='Category'
-            select
-            fullWidth
-            required
-            margin='normal'
-            defaultValue=''
-            helperText={`Only ${isIncome ? 'income' : 'expense'} categories are shown`}
-          >
-            {filteredCategories.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.name}
-              </MenuItem>
-            ))}
-          </TextField>
-
+            control={control}
+            render={({ field }) => (
+              <TextField
+                label='Category'
+                select
+                fullWidth
+                required
+                margin='normal'
+                value={field.value || ''}
+                onChange={(event) => {
+                  console.log('category selected:', event.target.value);
+                  field.onChange(event.target.value);
+                }}
+                onBlur={field.onBlur}
+                inputRef={field.ref}
+                error={!!errors.categoryId}
+                helperText={errors.categoryId?.message}
+                disabled={isSaving}
+              >
+                {filteredCategories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
           <TextField
-            id='transaction-notes'
-            name='notes'
+            {...register('notes')}
             label='Notes'
-            placeholder='Optional notes...'
             fullWidth
             margin='normal'
             multiline
             minRows={3}
+            disabled={isSaving}
           />
-
           <DialogActions sx={{ px: 0, pt: 2 }}>
-            <Button onClick={onClose}>Cancel</Button>
-            <Button type='submit' variant='contained'>
-              Save
+            <Button onClick={handleDialogClose} disabled={isSaving}>
+              Cancel
+            </Button>
+
+            <Button type='submit' variant='contained' disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save'}
             </Button>
           </DialogActions>
         </form>
