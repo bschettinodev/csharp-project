@@ -4,15 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class TransactionsController(TransactionsService transactionsService) : ControllerBase
+public class TransactionsController(TransactionsService transactionsService) : ApiControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TransactionResponseDto>>> GetAll()
     {
         var transactions = await transactionsService.GetAllAsync();
-
         return Ok(transactions);
     }
 
@@ -22,9 +19,7 @@ public class TransactionsController(TransactionsService transactionsService) : C
         var result = await transactionsService.GetByIdAsync(id);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return Ok(result.Value);
     }
@@ -35,9 +30,7 @@ public class TransactionsController(TransactionsService transactionsService) : C
         var result = await transactionsService.CreateAsync(dto);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
     }
@@ -48,9 +41,7 @@ public class TransactionsController(TransactionsService transactionsService) : C
         var result = await transactionsService.UpdateAsync(id, dto);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return NoContent();
     }
@@ -61,9 +52,7 @@ public class TransactionsController(TransactionsService transactionsService) : C
         var result = await transactionsService.DeleteAsync(id);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return NoContent();
     }

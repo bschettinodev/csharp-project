@@ -8,28 +8,7 @@ public class Account
     public string Name { get; set; } = string.Empty;
     public AccountType Type { get; set; }
     public decimal InitialBalance { get; set; }
-    public decimal CurrentBalance { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
-    public void ApplyTransaction(TransactionType type, decimal amount)
-    {
-        if (type == TransactionType.Income)
-        {
-            CurrentBalance += amount;
-            return;
-        }
-
-        CurrentBalance -= amount;
-    }
-
-    public void RevertTransaction(TransactionType type, decimal amount)
-    {
-        if (type == TransactionType.Income)
-        {
-            CurrentBalance -= amount;
-            return;
-        }
-
-        CurrentBalance += amount;
-    }
+    public ICollection<Transaction> Transactions { get; set; } = [];
 }

@@ -1,19 +1,15 @@
-using api.Common;
 using api.Dtos.Accounts;
 using api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class AccountsController(AccountsService accountsService) : ControllerBase
+public class AccountsController(AccountsService accountsService) : ApiControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAll()
     {
         var accounts = await accountsService.GetAllAsync();
-
         return Ok(accounts);
     }
 
@@ -23,9 +19,7 @@ public class AccountsController(AccountsService accountsService) : ControllerBas
         var result = await accountsService.GetByIdAsync(id);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return Ok(result.Value);
     }
@@ -36,9 +30,7 @@ public class AccountsController(AccountsService accountsService) : ControllerBas
         var result = await accountsService.CreateAsync(dto);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
     }
@@ -49,9 +41,7 @@ public class AccountsController(AccountsService accountsService) : ControllerBas
         var result = await accountsService.UpdateAsync(id, dto);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return NoContent();
     }
@@ -62,9 +52,7 @@ public class AccountsController(AccountsService accountsService) : ControllerBas
         var result = await accountsService.DeleteAsync(id);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return NoContent();
     }

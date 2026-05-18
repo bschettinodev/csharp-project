@@ -14,6 +14,39 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Account>(entity =>
+        {
+            entity.Property(a => a.Name).HasMaxLength(100);
+            entity.HasIndex(a => a.Name);
+        });
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.Property(c => c.Name).HasMaxLength(100);
+            entity.Property(c => c.Color).HasMaxLength(7);
+            entity.Property(c => c.Icon).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Transaction>(entity =>
+        {
+            entity.Property(t => t.Description).HasMaxLength(150);
+            entity.Property(t => t.Notes).HasMaxLength(500);
+
+            entity.HasIndex(t => t.Date);
+
+            entity
+                .HasOne(t => t.Account)
+                .WithMany(a => a.Transactions)
+                .HasForeignKey(t => t.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(t => t.Category)
+                .WithMany(c => c.Transactions)
+                .HasForeignKey(t => t.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder
             .Entity<Category>()
             .HasData(
@@ -49,7 +82,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                     Color = "#22C55E",
                     Icon = "refund",
                 },
-                // Expense
                 new Category
                 {
                     Id = Guid.Parse("22222222-2222-4222-8222-222222222221"),

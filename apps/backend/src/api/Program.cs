@@ -1,12 +1,15 @@
-using System.Transactions;
+using System.Text.Json.Serialization;
 using api.Data;
 using api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllers();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
+    );
 
 builder.Services.AddOpenApi();
 
@@ -31,7 +34,6 @@ builder.Services.AddScoped<TransactionsService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
