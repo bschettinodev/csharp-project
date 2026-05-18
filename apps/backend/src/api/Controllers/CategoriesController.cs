@@ -4,15 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class CategoriesController(CategoriesService categoriesService) : ControllerBase
+public class CategoriesController(CategoriesService categoriesService) : ApiControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CategoryResponseDto>>> GetAll()
     {
         var categories = await categoriesService.GetAllAsync();
-
         return Ok(categories);
     }
 
@@ -22,9 +19,7 @@ public class CategoriesController(CategoriesService categoriesService) : Control
         var result = await categoriesService.GetByIdAsync(id);
 
         if (!result.IsSuccess)
-        {
-            return StatusCode(result.StatusCode, new { message = result.Error });
-        }
+            return HandleError(result);
 
         return Ok(result.Value);
     }
