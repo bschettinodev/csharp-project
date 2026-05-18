@@ -11,7 +11,7 @@ import {
   type TransactionDialogType,
 } from '@/components/dialogs/TransactionDialog';
 import { TransactionsSection } from '@/components/transactions/TransationcsSection';
-import { TransactionType } from '@/enums/transaction';
+import { TransactionTypeApi } from '@/enums/transaction';
 
 export function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -29,11 +29,11 @@ export function DashboardPage() {
 
   const { totalIncome, totalExpenses, totalBalance } = useMemo(() => {
     const totalIncome = transactions
-      .filter((transaction) => transaction.type === TransactionType.Income)
+      .filter((transaction) => transaction.type === TransactionTypeApi.Income)
       .reduce((total, transaction) => total + transaction.amount, 0);
 
     const totalExpenses = transactions
-      .filter((transaction) => transaction.type === TransactionType.Expense)
+      .filter((transaction) => transaction.type === TransactionTypeApi.Expense)
       .reduce((total, transaction) => total + transaction.amount, 0);
 
     return {

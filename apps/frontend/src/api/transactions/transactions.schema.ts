@@ -1,7 +1,7 @@
 import dayjs, { type Dayjs } from 'dayjs';
 import { z } from 'zod';
 
-import { TransactionType } from '@/enums/transaction';
+import { TransactionTypeApi } from '@/enums/transaction';
 
 export const createTransactionSchema = z.object({
   description: z.string().min(1, 'Description is required'),
@@ -19,8 +19,8 @@ export const createTransactionSchema = z.object({
     .transform((value) => value.toISOString()),
 
   type: z.union([
-    z.literal(TransactionType.Income),
-    z.literal(TransactionType.Expense),
+    z.literal(TransactionTypeApi.Income),
+    z.literal(TransactionTypeApi.Expense),
   ]),
 
   accountId: z.uuid('Account is required'),
@@ -38,7 +38,7 @@ export const createTransactionDefaults: CreateTransactionFormValues = {
   description: '',
   amount: '',
   date: dayjs(),
-  type: TransactionType.Expense,
+  type: TransactionTypeApi.Expense,
   accountId: '',
   categoryId: '',
   notes: '',

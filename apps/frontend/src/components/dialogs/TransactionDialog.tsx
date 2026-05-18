@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   Alert,
+  Autocomplete,
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   InputAdornment,
-  MenuItem,
   TextField,
 } from '@mui/material';
 
@@ -31,7 +32,11 @@ import {
   type CreateTransactionPayload,
 } from '@/api/transactions/transactions.schema';
 
-import { TransactionType as TransactionTypeEnum } from '@/enums/transaction';
+import {
+  TransactionTypeApi,
+  transactionTypeApiMap,
+  TransactionType as TransactionTypeEnum,
+} from '@/enums/transaction';
 
 export type TransactionDialogType = 'income' | 'expense';
 
@@ -65,7 +70,7 @@ export function TransactionDialog({
     resolver: zodResolver(createTransactionSchema),
     defaultValues: {
       ...createTransactionDefaults,
-      type: isIncome ? TransactionTypeEnum.Income : TransactionTypeEnum.Expense,
+      type: isIncome ? TransactionTypeApi.Income : TransactionTypeApi.Expense,
     },
   });
 
@@ -90,9 +95,7 @@ export function TransactionDialog({
       fetchDialogData();
       reset({
         ...createTransactionDefaults,
-        type: isIncome
-          ? TransactionTypeEnum.Income
-          : TransactionTypeEnum.Expense,
+        type: isIncome ? TransactionTypeApi.Income : TransactionTypeApi.Expense,
         date: dayjs(),
       });
     }
@@ -103,7 +106,9 @@ export function TransactionDialog({
       ? TransactionTypeEnum.Income
       : TransactionTypeEnum.Expense;
 
-    return categories.filter((category) => category.type === transactionType);
+    return categories.filter(
+      (category) => transactionTypeApiMap[category.type] === transactionType
+    );
   }, [categories, isIncome]);
 
   async function onSubmit(data: CreateTransactionPayload) {
@@ -188,55 +193,103 @@ export function TransactionDialog({
           <Controller
             name='accountId'
             control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                value={field.value ?? ''}
-                label='Account'
-                select
-                fullWidth
-                required
-                margin='normal'
-                error={!!errors.accountId}
-                helperText={errors.accountId?.message}
-                disabled={isSaving}
-              >
-                {accounts.map((account) => (
-                  <MenuItem key={account.id} value={account.id}>
-                    {account.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
+            render={({ field }) => {
+              const selectedAccount =
+                accounts.find((account) => account.id === field.value) ?? null;
+
+              return (
+                <Autocomplete
+                  options={accounts}
+                  value={selectedAccount}
+                  onChange={(_, newValue) => {
+                    field.onChange(newValue?.id ?? '');
+                  }}
+                  getOptionLabel={(option) => option.name}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
+                  disabled={isSaving}
+                  fullWidth
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label='Account'
+                      required
+                      margin='normal'
+                      error={!!errors.accountId}
+                      helperText={errors.accountId?.message}
+                    />
+                  )}
+                />
+              );
+            }}
           />
           <Controller
             name='categoryId'
             control={control}
-            render={({ field }) => (
-              <TextField
-                label='Category'
-                select
-                fullWidth
-                required
-                margin='normal'
-                value={field.value || ''}
-                onChange={(event) => {
-                  console.log('category selected:', event.target.value);
-                  field.onChange(event.target.value);
-                }}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-                error={!!errors.categoryId}
-                helperText={errors.categoryId?.message}
-                disabled={isSaving}
-              >
-                {filteredCategories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
+            render={({ field }) => {
+              const selectedCategory =
+                filteredCategories.find(
+                  (category) => category.id === field.value
+                ) ?? null;
+
+              return (
+                <Autocomplete
+                  options={filteredCategories}
+                  value={selectedCategory}
+                  onChange={(_, newValue) => {
+                    field.onChange(newValue?.id ?? '');
+                  }}
+                  getOptionLabel={(option) => option.name}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
+                  disabled={isSaving}
+                  fullWidth
+                  renderOption={(props, option) => (
+                    <Box
+                      component='li'
+                      {...props}
+                      key={option.id}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 2,
+                          backgroundColor: option.color,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontWeight: 700,
+                          fontSize: 12,
+                        }}
+                      >
+                        {option.name.charAt(0)}
+                      </Box>
+
+                      {option.name}
+                    </Box>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label='Category'
+                      required
+                      margin='normal'
+                      error={!!errors.categoryId}
+                      helperText={errors.categoryId?.message}
+                    />
+                  )}
+                />
+              );
+            }}
           />
           <TextField
             {...register('notes')}

@@ -1,11 +1,11 @@
-import type { TransactionType } from '@/enums/transaction';
+import type { TransactionTypeApi } from '@/enums/transaction';
 
 export type Transaction = {
   id: string;
   description: string;
   amount: number;
   date: string;
-  type: TransactionType;
+  type: TransactionTypeApi;
   accountId: string;
   accountName: string;
   categoryId: string;

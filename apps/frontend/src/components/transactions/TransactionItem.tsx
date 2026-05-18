@@ -2,14 +2,14 @@ import { Box, Card, Stack, Typography } from '@mui/material';
 
 import type { Transaction } from '@/api/transactions/transactions.types';
 import { CategoryIcon } from '@/components/common/CategoryIcon';
-import { TransactionType } from '@/enums/transaction';
+import { TransactionTypeApi } from '@/enums/transaction';
 
 type TransactionItemProps = {
   transaction: Transaction;
 };
 
 export function TransactionItem({ transaction }: TransactionItemProps) {
-  const isIncome = transaction.type === TransactionType.Income;
+  const isIncome = transaction.type === TransactionTypeApi.Income;
 
   return (
     <Card
