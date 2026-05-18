@@ -1,7 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 
 import type { Transaction } from '@/api/transactions/transactions.types';
-import { TransactionType } from '@/enums/transaction';
+import { TransactionTypeApi } from '@/enums/transaction';
 
 import { TransactionItem } from './TransactionItem';
 
@@ -15,7 +15,7 @@ export function TransactionsSection({
   const todayTransactions = transactions;
 
   const total = todayTransactions.reduce((acc, transaction) => {
-    if (transaction.type === TransactionType.Income) {
+    if (transaction.type === TransactionTypeApi.Income) {
       return acc + transaction.amount;
     }
 
