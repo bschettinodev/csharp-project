@@ -1,9 +1,33 @@
 using System.Text.Json.Serialization;
 using api.Data;
 using api.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://securetoken.google.com/financial-tracker-api-3a630";
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "https://securetoken.google.com/financial-tracker-api-3a630",
+
+            ValidateAudience = true,
+            ValidAudience = "financial-tracker-api-3a630",
+
+            ValidateLifetime = true,
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder
     .Services.AddControllers()
@@ -32,6 +56,21 @@ builder.Services.AddScoped<AccountsService>();
 builder.Services.AddScoped<CategoriesService>();
 builder.Services.AddScoped<TransactionsService>();
 
+var firebasePath = Path.Combine(
+    builder.Environment.ContentRootPath,
+    "firebase",
+    "firebase-admin.json"
+);
+
+FirebaseApp.Create(
+    new AppOptions()
+    {
+        Credential = CredentialFactory
+            .FromFile<ServiceAccountCredential>(firebasePath)
+            .ToGoogleCredential(),
+    }
+);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -42,6 +81,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("Frontend");
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

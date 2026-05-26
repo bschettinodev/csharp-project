@@ -5,8 +5,10 @@ dist/
 .env
 .env.*
 
-bin/
+bin/    
 obj/
+
+apps/backend/src/api/Firebase/firebase-admin.json
 
 .vscode/*
 !.vscode/settings.json
