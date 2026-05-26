@@ -18,6 +18,8 @@ import { DashboardPage } from '@/pages/Dashboard/DashboardPage';
 
 import { LoginPage } from '@/pages/Login/LoginPage';
 import { AccountsPage } from '@/pages/Accounts/AccountsPage';
+import { ProtectedRoute } from '@/router/ProtectedRoute';
+import { AuthProvider } from '@/firebase/provider';
 
 const router = createBrowserRouter([
   {
@@ -30,7 +32,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: <MobileAppLayout />,
+    element: (
+      <ProtectedRoute>
+        <MobileAppLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -40,7 +46,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/accounts',
-    element: <MobileAppLayout />,
+    element: (
+      <ProtectedRoute>
+        <MobileAppLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -55,7 +65,9 @@ createRoot(document.getElementById('root')!).render(
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <CssBaseline />
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </LocalizationProvider>
     </ThemeProvider>
   </StrictMode>
