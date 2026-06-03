@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services;
 
-public class TransactionsService(AppDbContext context)
+public class TransactionsService(AppDbContext context, UsersService usersService)
 {
     private static Expression<Func<Transaction, TransactionResponseDto>> TransactionProjection()
     {
@@ -31,24 +31,23 @@ public class TransactionsService(AppDbContext context)
         };
     }
 
-    private static Expression<Func<Transaction, bool>> ByIdFilter(Guid id)
-    {
-        return transaction => transaction.Id == id;
-    }
-
-    private async Task<decimal> CalculateCurrentBalanceAsync(Guid accountId)
+    private async Task<decimal> CalculateCurrentBalanceAsync(Guid accountId, Guid userId)
     {
         var account = await context
             .Accounts.AsNoTracking()
-            .Where(a => a.Id == accountId)
-            .Select(a => new
+            .Where(account => account.Id == accountId && account.UserId == userId)
+            .Select(account => new
             {
-                a.InitialBalance,
-                Income = a.Transactions.Where(t => t.Type == TransactionType.Income)
-                    .Sum(t => (decimal?)t.Amount)
+                account.InitialBalance,
+
+                Income = account
+                    .Transactions.Where(transaction => transaction.Type == TransactionType.Income)
+                    .Sum(transaction => (decimal?)transaction.Amount)
                     ?? 0,
-                Expense = a.Transactions.Where(t => t.Type == TransactionType.Expense)
-                    .Sum(t => (decimal?)t.Amount)
+
+                Expense = account
+                    .Transactions.Where(transaction => transaction.Type == TransactionType.Expense)
+                    .Sum(transaction => (decimal?)transaction.Amount)
                     ?? 0,
             })
             .FirstOrDefaultAsync();
@@ -61,8 +60,11 @@ public class TransactionsService(AppDbContext context)
 
     public async Task<List<TransactionResponseDto>> GetAllAsync()
     {
+        var user = await usersService.GetOrCreateAsync();
+
         return await context
             .Transactions.AsNoTracking()
+            .Where(transaction => transaction.UserId == user.Id)
             .OrderByDescending(transaction => transaction.Date)
             .Select(TransactionProjection())
             .ToListAsync();
@@ -70,9 +72,11 @@ public class TransactionsService(AppDbContext context)
 
     public async Task<Result<TransactionResponseDto>> GetByIdAsync(Guid id)
     {
+        var user = await usersService.GetOrCreateAsync();
+
         var transaction = await context
             .Transactions.AsNoTracking()
-            .Where(ByIdFilter(id))
+            .Where(transaction => transaction.Id == id && transaction.UserId == user.Id)
             .Select(TransactionProjection())
             .FirstOrDefaultAsync();
 
@@ -84,38 +88,47 @@ public class TransactionsService(AppDbContext context)
 
     public async Task<Result<TransactionResponseDto>> CreateAsync(CreateTransactionDto dto)
     {
+        var user = await usersService.GetOrCreateAsync();
+
         var account = await context
             .Accounts.AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Id == dto.AccountId);
+            .FirstOrDefaultAsync(account =>
+                account.Id == dto.AccountId && account.UserId == user.Id
+            );
 
         if (account is null)
             return Result<TransactionResponseDto>.NotFound("Account not found.");
 
         var category = await context
             .Categories.AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == dto.CategoryId);
+            .FirstOrDefaultAsync(category => category.Id == dto.CategoryId);
 
         if (category is null)
             return Result<TransactionResponseDto>.NotFound("Category not found.");
 
         if (category.Type != dto.Type)
+        {
             return Result<TransactionResponseDto>.BadRequest(
                 "Category type must match transaction type."
             );
+        }
 
         if (dto.Type == TransactionType.Expense)
         {
-            var currentBalance = await CalculateCurrentBalanceAsync(dto.AccountId);
+            var currentBalance = await CalculateCurrentBalanceAsync(dto.AccountId, user.Id);
 
             if (currentBalance < dto.Amount)
+            {
                 return Result<TransactionResponseDto>.BadRequest(
                     "Insufficient balance for this expense."
                 );
+            }
         }
 
         var transaction = new Transaction
         {
             Id = Guid.NewGuid(),
+            UserId = user.Id,
             Description = dto.Description.Trim(),
             Amount = dto.Amount,
             Date = dto.Date,
@@ -127,11 +140,12 @@ public class TransactionsService(AppDbContext context)
         };
 
         context.Transactions.Add(transaction);
+
         await context.SaveChangesAsync();
 
         var created = await context
             .Transactions.AsNoTracking()
-            .Where(ByIdFilter(transaction.Id))
+            .Where(transaction => transaction.Id == transaction.Id && transaction.UserId == user.Id)
             .Select(TransactionProjection())
             .FirstOrDefaultAsync();
 
@@ -140,33 +154,44 @@ public class TransactionsService(AppDbContext context)
 
     public async Task<Result> UpdateAsync(Guid id, UpdateTransactionDto dto)
     {
+        var user = await usersService.GetOrCreateAsync();
+
         await using var dbTransaction = await context.Database.BeginTransactionAsync();
 
         try
         {
-            var transaction = await context.Transactions.FirstOrDefaultAsync(ByIdFilter(id));
+            var transaction = await context.Transactions.FirstOrDefaultAsync(transaction =>
+                transaction.Id == id && transaction.UserId == user.Id
+            );
 
             if (transaction is null)
                 return Result.NotFound("Transaction not found.");
 
-            var accountExists = await context.Accounts.AnyAsync(a => a.Id == dto.AccountId);
+            var accountExists = await context.Accounts.AnyAsync(account =>
+                account.Id == dto.AccountId && account.UserId == user.Id
+            );
 
             if (!accountExists)
                 return Result.NotFound("Account not found.");
 
             var category = await context
                 .Categories.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == dto.CategoryId);
+                .FirstOrDefaultAsync(category => category.Id == dto.CategoryId);
 
             if (category is null)
                 return Result.NotFound("Category not found.");
 
             if (category.Type != dto.Type)
+            {
                 return Result.BadRequest("Category type must match transaction type.");
+            }
 
             if (dto.Type == TransactionType.Expense)
             {
-                var balanceWithoutCurrent = await CalculateCurrentBalanceAsync(dto.AccountId);
+                var balanceWithoutCurrent = await CalculateCurrentBalanceAsync(
+                    dto.AccountId,
+                    user.Id
+                );
 
                 var adjustment =
                     transaction.AccountId == dto.AccountId
@@ -180,7 +205,9 @@ public class TransactionsService(AppDbContext context)
                 var availableBalance = balanceWithoutCurrent + adjustment;
 
                 if (availableBalance < dto.Amount)
+                {
                     return Result.BadRequest("Insufficient balance for this expense.");
+                }
             }
 
             transaction.Description = dto.Description.Trim();
@@ -206,12 +233,17 @@ public class TransactionsService(AppDbContext context)
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var transaction = await context.Transactions.FirstOrDefaultAsync(ByIdFilter(id));
+        var user = await usersService.GetOrCreateAsync();
+
+        var transaction = await context.Transactions.FirstOrDefaultAsync(transaction =>
+            transaction.Id == id && transaction.UserId == user.Id
+        );
 
         if (transaction is null)
             return Result.NotFound("Transaction not found.");
 
         context.Transactions.Remove(transaction);
+
         await context.SaveChangesAsync();
 
         return Result.Success();

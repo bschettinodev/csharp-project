@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services;
 
-public class AccountsService(AppDbContext context)
+public class AccountsService(AppDbContext context, UsersService usersService)
 {
     private static Expression<Func<Account, AccountResponseDto>> AccountProjection()
     {
@@ -44,8 +44,11 @@ public class AccountsService(AppDbContext context)
 
     public async Task<List<AccountResponseDto>> GetAllAsync()
     {
+        var user = await usersService.GetOrCreateAsync();
+
         return await context
             .Accounts.AsNoTracking()
+            .Where(account => account.UserId == user.Id)
             .OrderBy(account => account.Name)
             .Select(AccountProjection())
             .ToListAsync();
@@ -53,9 +56,11 @@ public class AccountsService(AppDbContext context)
 
     public async Task<Result<AccountResponseDto>> GetByIdAsync(Guid id)
     {
+        var user = await usersService.GetOrCreateAsync();
+
         var account = await context
             .Accounts.AsNoTracking()
-            .Where(account => account.Id == id)
+            .Where(account => account.Id == id && account.UserId == user.Id)
             .Select(AccountProjection())
             .FirstOrDefaultAsync();
 
@@ -69,18 +74,23 @@ public class AccountsService(AppDbContext context)
 
     public async Task<Result<AccountResponseDto>> CreateAsync(CreateAccountDto dto)
     {
+        var user = await usersService.GetOrCreateAsync();
+
         var name = dto.Name.Trim();
 
         var nameAlreadyExists = await context.Accounts.AnyAsync(account =>
-            EF.Functions.ILike(account.Name, name)
+            account.UserId == user.Id && EF.Functions.ILike(account.Name, name)
         );
 
         if (nameAlreadyExists)
+        {
             return Result<AccountResponseDto>.Conflict("An account with this name already exists.");
+        }
 
         var account = new Account
         {
             Id = Guid.NewGuid(),
+            UserId = user.Id,
             Name = name,
             Type = dto.Type,
             InitialBalance = dto.InitialBalance,
@@ -88,6 +98,7 @@ public class AccountsService(AppDbContext context)
         };
 
         context.Accounts.Add(account);
+
         await context.SaveChangesAsync();
 
         return Result<AccountResponseDto>.Created(
@@ -105,36 +116,52 @@ public class AccountsService(AppDbContext context)
 
     public async Task<Result> UpdateAsync(Guid id, UpdateAccountDto dto)
     {
+        var user = await usersService.GetOrCreateAsync();
+
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
-            var account = await context.Accounts.FirstOrDefaultAsync(a => a.Id == id);
+            var account = await context.Accounts.FirstOrDefaultAsync(account =>
+                account.Id == id && account.UserId == user.Id
+            );
 
             if (account is null)
+            {
                 return Result.NotFound("Account not found.");
+            }
 
             var name = dto.Name.Trim();
 
             var nameAlreadyExists = await context.Accounts.AnyAsync(existing =>
-                existing.Id != id && EF.Functions.ILike(existing.Name, name)
+                existing.Id != id
+                && existing.UserId == user.Id
+                && EF.Functions.ILike(existing.Name, name)
             );
 
             if (nameAlreadyExists)
+            {
                 return Result.Conflict("An account with this name already exists.");
+            }
 
-            var hasTransactions = await context.Transactions.AnyAsync(t => t.AccountId == id);
+            var hasTransactions = await context.Transactions.AnyAsync(transaction =>
+                transaction.AccountId == id && transaction.UserId == user.Id
+            );
 
             if (hasTransactions && account.InitialBalance != dto.InitialBalance)
+            {
                 return Result.Conflict(
                     "Initial balance cannot be changed because this account already has transactions."
                 );
+            }
 
             account.Name = name;
             account.Type = dto.Type;
 
             if (!hasTransactions)
+            {
                 account.InitialBalance = dto.InitialBalance;
+            }
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -150,11 +177,15 @@ public class AccountsService(AppDbContext context)
 
     public async Task<Result> DeleteAsync(Guid id)
     {
+        var user = await usersService.GetOrCreateAsync();
+
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
-            var account = await context.Accounts.FirstOrDefaultAsync(account => account.Id == id);
+            var account = await context.Accounts.FirstOrDefaultAsync(account =>
+                account.Id == id && account.UserId == user.Id
+            );
 
             if (account is null)
             {
@@ -162,7 +193,7 @@ public class AccountsService(AppDbContext context)
             }
 
             var hasTransactions = await context.Transactions.AnyAsync(existingTransaction =>
-                existingTransaction.AccountId == id
+                existingTransaction.AccountId == id && existingTransaction.UserId == user.Id
             );
 
             if (hasTransactions)
