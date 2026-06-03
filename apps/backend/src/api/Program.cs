@@ -52,6 +52,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<CurrentUserService>();
+builder.Services.AddScoped<UsersService>();
+
 builder.Services.AddScoped<AccountsService>();
 builder.Services.AddScoped<CategoriesService>();
 builder.Services.AddScoped<TransactionsService>();
@@ -62,14 +67,17 @@ var firebasePath = Path.Combine(
     "firebase-admin.json"
 );
 
-FirebaseApp.Create(
-    new AppOptions()
-    {
-        Credential = CredentialFactory
-            .FromFile<ServiceAccountCredential>(firebasePath)
-            .ToGoogleCredential(),
-    }
-);
+if (FirebaseApp.DefaultInstance is null)
+{
+    FirebaseApp.Create(
+        new AppOptions()
+        {
+            Credential = CredentialFactory
+                .FromFile<ServiceAccountCredential>(firebasePath)
+                .ToGoogleCredential(),
+        }
+    );
+}
 
 var app = builder.Build();
 

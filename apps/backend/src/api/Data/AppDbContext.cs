@@ -6,6 +6,7 @@ namespace api.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    public DbSet<User> Users => Set<User>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
@@ -14,25 +15,56 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(u => u.FirebaseUid).HasMaxLength(128);
+
+            entity.Property(u => u.Email).HasMaxLength(255);
+
+            entity.Property(u => u.DisplayName).HasMaxLength(100);
+
+            entity.Property(u => u.PhotoUrl).HasMaxLength(500);
+
+            entity.HasIndex(u => u.FirebaseUid).IsUnique();
+
+            entity.HasIndex(u => u.Email).IsUnique();
+        });
+
         modelBuilder.Entity<Account>(entity =>
         {
             entity.Property(a => a.Name).HasMaxLength(100);
+
             entity.HasIndex(a => a.Name);
+
+            entity
+                .HasOne(a => a.User)
+                .WithMany(u => u.Accounts)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Category>(entity =>
         {
             entity.Property(c => c.Name).HasMaxLength(100);
+
             entity.Property(c => c.Color).HasMaxLength(7);
+
             entity.Property(c => c.Icon).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Transaction>(entity =>
         {
             entity.Property(t => t.Description).HasMaxLength(150);
+
             entity.Property(t => t.Notes).HasMaxLength(500);
 
             entity.HasIndex(t => t.Date);
+
+            entity
+                .HasOne(t => t.User)
+                .WithMany(u => u.Transactions)
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity
                 .HasOne(t => t.Account)

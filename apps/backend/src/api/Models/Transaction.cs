@@ -14,10 +14,16 @@ public class Transaction
 
     public TransactionType Type { get; set; }
 
+    public Guid UserId { get; set; }
+
+    public User User { get; set; } = null!;
+
     public Guid AccountId { get; set; }
+
     public Account Account { get; set; } = null!;
 
     public Guid CategoryId { get; set; }
+
     public Category Category { get; set; } = null!;
 
     public string? Notes { get; set; }
